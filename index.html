@@ -4,135 +4,109 @@
   <meta charset="UTF-8" />
   <title>لعبة حجرة ورقة مقص</title>
   <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      direction: rtl;
-      background: linear-gradient(135deg, #e0eafc, #cfdef3);
-      margin: 0;
-      padding: 0;
-      overflow-x: hidden;
+    body{
+      font-family: Arial, sans-serif;direction:rtl;background:linear-gradient(135deg,#e0eafc,#cfdef3);
+      margin:0;padding:0;overflow-x:hidden
     }
-
-    #controls {
-      padding: 15px;
-      background: #2c3e50;
-      text-align: center;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    /* شريط التحكم */
+    #controls{
+      padding:10px;background:#2c3e50;text-align:center;box-shadow:0 4px 6px rgba(0,0,0,.2);position:relative
     }
-    #controls button, #controls select {
-      padding: 10px 18px;
-      font-size: 15px;
-      margin: 0 8px;
-      cursor: pointer;
-      border: none;
-      border-radius: 8px;
-      background: #3498db;
-      color: #fff;
-      font-weight: bold;
-      transition: all 0.3s ease;
+    .btn{
+      padding:10px 14px;font-size:14px;margin:0 6px;cursor:pointer;border:0;border-radius:8px;
+      background:#3498db;color:#fff;font-weight:bold;transition:.25s
     }
-    #controls button:hover, #controls select:hover {
-      background: #2980b9;
-      transform: scale(1.05);
+    .btn:hover{background:#2980b9;transform:scale(1.04)}
+    .input{
+      padding:9px 10px;border-radius:8px;border:0;margin:0 6px;font-weight:bold
     }
-
-    #stats {
-      padding: 12px;
-      background: #34495e;
-      color: #fff;
-      display: flex;
-      justify-content: space-around;
-      font-size: 20px;
-      font-weight: bold;
-      border-bottom: 3px solid #2c3e50;
+    /* قائمة السرعة المنبثقة */
+    .menu{position:absolute;background:#1f2a36;border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,.25);display:none}
+    .menu button{display:block;width:100%;text-align:right;background:transparent;border:0;color:#fff;padding:10px 12px}
+    .menu button:hover{background:#2c3e50}
+    /* شريط الإحصاءات */
+    #stats{
+      padding:8px 12px;background:#34495e;color:#fff;display:flex;gap:18px;align-items:center;justify-content:center;
+      font-size:18px;font-weight:bold;border-bottom:3px solid #2c3e50
     }
-
-    #arena {
-      width: 100%;
-      height: 600px;
-      background: #fff;
-      position: relative;
-      overflow: hidden;           /* مهم: يمنع خروج الرقاقات خارج الحلبة */
-      border: 3px solid #2c3e50;
-      border-radius: 12px;
-      margin-top: 10px;
+    #stats .item{display:flex;align-items:center;gap:6px}
+    /* الحلبة */
+    #arena{
+      width:100%;height:600px;background:#fff;position:relative;overflow:hidden;border:3px solid #2c3e50;border-radius:12px;margin-top:10px
     }
-
-    .entity {
-      position: absolute;
-      font-size: 20px;
-      width: 24px;
-      height: 24px;
-      text-align: center;
-      user-select: none;
-      will-change: transform, left, top;
+    .entity{
+      position:absolute;font-size:20px;width:24px;height:24px;text-align:center;user-select:none;will-change:left,top,transform
     }
-
-    #winnerScreen {
-      position: absolute;
-      inset: 0;
-      background: rgba(255, 255, 255, 0.9);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 100;
-      opacity: 0;
-      transition: opacity 0.8s ease;
-      pointer-events: none;
+    /* شاشة الفائز */
+    #winnerScreen{
+      position:absolute;inset:0;background:rgba(255,255,255,.9);display:flex;flex-direction:column;justify-content:center;align-items:center;
+      z-index:100;opacity:0;transition:opacity .8s ease;pointer-events:none
     }
-    #winnerScreen.show { opacity: 1; }
-    #winnerEmoji { font-size: 120px; animation: pulse 1s infinite alternate; position: relative; z-index: 150; }
-    #winnerText { font-size: 40px; font-weight: bold; margin-top: 20px; color: #2c3e50; position: relative; z-index: 150; }
-
-    @keyframes pulse {
-      from { transform: scale(1); }
-      to { transform: scale(1.2); }
+    #winnerScreen.show{opacity:1}
+    #winnerEmoji{font-size:120px;animation:pulse 1s infinite alternate;position:relative;z-index:150}
+    #winnerText{font-size:36px;font-weight:bold;margin-top:10px;color:#2c3e50;position:relative;z-index:150}
+    @keyframes pulse{from{transform:scale(1)}to{transform:scale(1.15)}}
+    /* الكونفيتي داخل الحلبة فقط */
+    .confetti{position:absolute;width:10px;height:10px;opacity:.95;z-index:200;border-radius:2px}
+    /* صندوق الهدف (هدية) */
+    #goalBox{
+      position:absolute;top:10px;left:10px;background:#ff8a00;color:#fff;border-radius:12px;padding:8px 10px;display:flex;align-items:center;gap:8px;z-index:220;
+      box-shadow:0 6px 16px rgba(0,0,0,.25);font-weight:bold
     }
-
-    .confetti {
-      position: absolute;
-      width: 10px;
-      height: 10px;
-      opacity: 0.95;
-      z-index: 200; /* يمر أمام الفائز */
-      border-radius: 2px;
-    }
+    #goalBox .gift{font-size:20px}
+    #goalBox .pct{background:#fff;color:#ff8a00;font-weight:900;border-radius:8px;padding:4px 8px;min-width:48px;text-align:center}
+    /* قائمة السرعة موقعها تحت زر السرعة */
+    #speedMenu{min-width:120px;right:10px;top:50px}
+    /* توقيع الصورة أسفل اللعبة */
+    #signatureWrap{display:flex;justify-content:center;align-items:center;margin:14px 0 24px}
+    #signatureWrap img{max-width:92%;height:auto;opacity:.95}
   </style>
 </head>
 <body>
 
-<div id="controls">
-  <button id="startBtn">▶️ بدء</button>
-  <button id="endBtn">⛔ إنهاء</button>
-  <label>⚡ السرعة:
-    <select id="speedSelect">
-      <option value="1">1x</option>
-      <option value="1.25">1.25x</option>
-      <option value="1.5" selected>1.5x</option>
-      <option value="1.75">1.75x</option>
-      <option value="2">2x</option>
-      <option value="3">3x</option>
-    </select>
-  </label>
-</div>
+  <div id="controls">
+    <button id="startBtn" class="btn">بدء ▶️</button>
+    <button id="endBtn" class="btn" style="background:#e74c3c">إنهاء ⛔</button>
 
-<div id="stats">
-  🪨 <span id="rockCount">0</span> |
-  ✂️ <span id="scissorsCount">0</span> |
-  📄 <span id="paperCount">0</span> |
-  🏆 <span id="lastWinner">-</span>
-</div>
+    <!-- عدد العناصر لكل نوع (افتراضي 12) -->
+    <label style="color:#fff;margin:0 6px">العدد/نوع:
+      <input id="countInput" class="input" type="number" min="1" max="300" value="12" style="width:80px">
+    </label>
 
-<div id="arena">
-  <div id="winnerScreen">
-    <div id="winnerEmoji"></div>
-    <div id="winnerText">🏆 البطل 🏆</div>
+    <!-- زر السرعة بقائمة -->
+    <button id="speedBtn" class="btn" style="background:#f39c12">⚡ السرعة: <span id="speedLabel">1.5x</span></button>
+    <div id="speedMenu" class="menu">
+      <button data-speed="1">1x</button>
+      <button data-speed="1.25">1.25x</button>
+      <button data-speed="1.5">1.5x</button>
+      <button data-speed="1.75">1.75x</button>
+      <button data-speed="2">2x</button>
+      <button data-speed="3">3x</button>
+    </div>
   </div>
-</div>
 
-<!-- صوت الفوز -->
-<audio id="victorySound" src="https://www.fesliyanstudios.com/play-mp3/387" preload="auto"></audio>
+  <div id="stats">
+    <div class="item">🪨 <span id="rockCount">0</span></div>
+    <div class="item">✂️ <span id="scissorsCount">0</span></div>
+    <div class="item">📄 <span id="paperCount">0</span></div>
+    <div class="item">🏆 <span id="lastWinner">-</span></div>
+  </div>
+
+  <div id="arena">
+    <div id="goalBox"><span class="gift">🎁</span><span>الحظ المتواصل</span><span id="goalPct" class="pct">0%</span></div>
+    <div id="winnerScreen">
+      <div id="winnerEmoji"></div>
+      <div id="winnerText">🏆 البطل 🏆</div>
+    </div>
+  </div>
+
+  <!-- صورة التوقيع أسفل الحلبة -->
+  <div id="signatureWrap">
+    <img src="Signature.png" alt="Signature">
+  </div>
+
+  <!-- صوت الفوز -->
+  <audio id="victorySound" src="https://www.fesliyanstudios.com/play-mp3/387" preload="auto"></audio>
 
 <script>
   const arena = document.getElementById("arena");
@@ -140,327 +114,257 @@
   const winnerScreen = document.getElementById("winnerScreen");
   const winnerEmoji = document.getElementById("winnerEmoji");
   const victorySound = document.getElementById("victorySound");
+  const goalPctEl = document.getElementById("goalPct");
 
   const startBtn = document.getElementById("startBtn");
   const endBtn = document.getElementById("endBtn");
-  const speedSelect = document.getElementById("speedSelect");
+  const countInput = document.getElementById("countInput");
 
+  const speedBtn = document.getElementById("speedBtn");
+  const speedMenu = document.getElementById("speedMenu");
+  const speedLabel = document.getElementById("speedLabel");
+
+  // السرعة
+  let speedFactor = 1.5;
+
+  // حالة اللعبة
   let gameRunning = false;
   let animationFrameId;
-  let speedFactor = parseFloat(speedSelect.value);
 
-  let counts = { rock: 0, paper: 0, scissors: 0 };
-  const emojis = { rock: "🪨", paper: "📄", scissors: "✂️" };
-  const beatMap = { rock: "scissors", scissors: "paper", paper: "rock" };
+  // الكيانات
+  const emojis = { rock:"🪨", paper:"📄", scissors:"✂️" };
+  const beatMap = { rock:"scissors", scissors:"paper", paper:"rock" };
+  let counts = { rock:0, paper:0, scissors:0 };
   let entities = [];
 
-  // ====== الأصوات: مسبح لكل نوع + تهيئة عند أول بدء ======
+  // الصوتيات (ملفاتك المحلية بجانب index.html)
   const soundURLs = {
-    rock: "https://cdn.pixabay.com/download/audio/2021/09/02/audio_8e0b4b4a8b.mp3?filename=rock-hit-9046.mp3",
-    paper: "https://cdn.pixabay.com/download/audio/2022/03/10/audio_2f2b4fa6c4.mp3?filename=paper-rustle-1-112225.mp3",
-    scissors: "https://cdn.pixabay.com/download/audio/2022/03/10/audio_4c4a6d0c1a.mp3?filename=scissors-cut-1-112221.mp3",
-    tie: "https://cdn.pixabay.com/download/audio/2022/03/15/audio_7e6ef7f3d9.mp3?filename=mouth-scream-143846.mp3"
+    rock: "Rock.mp3",
+    paper: "Paper.mp3",
+    scissors: "scissor.mp3"
   };
 
-  const POOL_SIZE = 8;
-  const audioPools = {
-    rock: [], paper: [], scissors: [], tie: []
-  };
-  let audioReady = false;
-
-  function buildPools() {
-    ["rock","paper","scissors","tie"].forEach(type => {
-      audioPools[type] = new Array(POOL_SIZE).fill(0).map(() => {
-        const a = new Audio(soundURLs[type]);
-        a.preload = "auto";
-        a.volume = 0.65;
-        return a;
-      });
-    });
-  }
-  buildPools();
-
-  const poolIndex = { rock:0, paper:0, scissors:0, tie:0 };
-  function playPoly(type) {
-    if (!audioReady) return; // لن يشغّل قبل التهيئة بضغط زر
-    const pool = audioPools[type] || audioPools.tie;
-    const idx = poolIndex[type] % pool.length;
-    const a = pool[idx];
-    try { a.currentTime = 0; a.play().catch(()=>{}); } catch(_){}
-    poolIndex[type]++;
+  // تشغيل صوت التصادم = صوت النوع الفائز / أو نفس النوع
+  function playHit(type){
+    const url = soundURLs[type];
+    if(!url) return;
+    try{
+      const a = new Audio(url);
+      a.volume = 0.75;
+      a.play().catch(()=>{});
+    }catch(_){}
   }
 
-  // تهيئة الصوت عند أول ضغطة بدء (تحايل على قيود تشغيل الصوت في الموبايل)
-  function primeAudio() {
-    if (audioReady) return;
-    ["rock","paper","scissors","tie"].forEach(t=>{
-      const a = audioPools[t][0];
-      try {
-        a.volume = 0; a.play().then(()=>{ a.pause(); a.currentTime = 0; a.volume = 0.65; }).catch(()=>{});
-      } catch(_){}
-    });
-    // كذلك نفعل صوت الفوز
-    try {
-      victorySound.volume = 0;
-      victorySound.play().then(()=>{ victorySound.pause(); victorySound.currentTime = 0; victorySound.volume = 1; }).catch(()=>{});
-    } catch(_){}
-    audioReady = true;
+  // هدف: تتبّع فوز نفس النوع على التوالي
+  let lastRoundWinner = null;
+  let winnerStreak = 0; // 0..10
+
+  function updateGoalUI(){
+    const pct = Math.min(winnerStreak,10)*10;
+    goalPctEl.textContent = pct + "%";
   }
 
-  // ====== أدوات ======
-  function getRandomPosition() {
+  function announceJackpot(){
+    alert("🎁 الكود: 41380130\nلقد فزت معنا بجائزة قدرها 1000 أوقية مقدمة من المطور على روعة حظك!");
+  }
+
+  // واجهة السرعة
+  speedBtn.addEventListener("click", () => {
+    speedMenu.style.display = speedMenu.style.display === "block" ? "none" : "block";
+  });
+  document.addEventListener("click",(e)=>{
+    if(!speedBtn.contains(e.target) && !speedMenu.contains(e.target)){
+      speedMenu.style.display="none";
+    }
+  });
+  speedMenu.querySelectorAll("button").forEach(btn=>{
+    btn.onclick = ()=>{
+      speedFactor = parseFloat(btn.dataset.speed);
+      speedLabel.textContent = btn.textContent;
+      speedMenu.style.display="none";
+    };
+  });
+
+  function getRandomPosition(){
     return {
       x: Math.random() * (arena.clientWidth - 24),
       y: Math.random() * (arena.clientHeight - 24)
     };
   }
 
-  function createEntity(type) {
+  function createEntity(type){
     const div = document.createElement("div");
     div.className = "entity";
     div.dataset.type = type;
-    div.innerText = emojis[type];
-    const {x, y} = getRandomPosition();
-    div.style.left = `${x}px`;
-    div.style.top = `${y}px`;
+    div.textContent = emojis[type];
+
+    const {x,y} = getRandomPosition();
+    div.style.left = x+"px";
+    div.style.top = y+"px";
     arena.appendChild(div);
 
-    let baseDx = (Math.random() * 2 - 1) || 0.6;
-    let baseDy = (Math.random() * 2 - 1) || -0.6;
+    let baseDx = (Math.random()*2 - 1) || 0.6;
+    let baseDy = (Math.random()*2 - 1) || -0.6;
 
-    entities.push({ el: div, x, y, baseDx, baseDy });
+    entities.push({ el:div, x, y, baseDx, baseDy });
     counts[type]++;
   }
 
-  function updateCounts() {
-    document.getElementById("rockCount").innerText = counts.rock;
-    document.getElementById("paperCount").innerText = counts.paper;
-    document.getElementById("scissorsCount").innerText = counts.scissors;
+  function updateCounts(){
+    document.getElementById("rockCount").textContent = counts.rock;
+    document.getElementById("paperCount").textContent = counts.paper;
+    document.getElementById("scissorsCount").textContent = counts.scissors;
   }
 
-  function rectOf(e) {
-    return e.el.getBoundingClientRect();
+  function rectOf(e){ return e.el.getBoundingClientRect(); }
+
+  function checkCollision(a,b){
+    const r1 = rectOf(a), r2 = rectOf(b);
+    return !(r1.right<r2.left || r1.left>r2.right || r1.bottom<r2.top || r1.top>r2.bottom);
   }
 
-  function checkCollision(a, b) {
-    const r1 = rectOf(a);
-    const r2 = rectOf(b);
-    return !(
-      r1.right < r2.left ||
-      r1.left > r2.right ||
-      r1.bottom < r2.top ||
-      r1.top > r2.bottom
-    );
+  // دفعة متعاكسة على خط التصادم
+  function knockback(a,b){
+    const ax=a.x+12, ay=a.y+12, bx=b.x+12, by=b.y+12;
+    let nx=ax-bx, ny=ay-by; const len=Math.hypot(nx,ny)||1; nx/=len; ny/=len;
+    const base=1.2*speedFactor, jitter=0.25;
+    a.baseDx =  nx*base + (Math.random()*jitter - jitter/2);
+    a.baseDy =  ny*base + (Math.random()*jitter - jitter/2);
+    b.baseDx = -nx*base + (Math.random()*jitter - jitter/2);
+    b.baseDy = -ny*base + (Math.random()*jitter - jitter/2);
+    const sep=3; a.x+=nx*sep; a.y+=ny*sep; b.x-=nx*sep; b.y-=ny*sep;
   }
 
-  // فصل ومنح دفعة متعاكسة على خط التصادم + قليل راندوم لتفادي الالتصاق
-  function knockback(a, b) {
-    // مركز كل عنصر
-    const ax = a.x + 12, ay = a.y + 12;
-    const bx = b.x + 12, by = b.y + 12;
+  function rpsResolve(a,b){
+    let aType=a.el.dataset.type, bType=b.el.dataset.type;
 
-    let nx = ax - bx;
-    let ny = ay - by;
-    const len = Math.hypot(nx, ny) || 1;
-    nx /= len; ny /= len;
-
-    // سرعة اصطدام أساسية + راندوم بسيط
-    const base = 1.2 * speedFactor;
-    const jitter = 0.2;
-
-    // اعطِ كل واحد دفعة عكسية على نفس الخط
-    a.baseDx = nx * base + (Math.random()*jitter - jitter/2);
-    a.baseDy = ny * base + (Math.random()*jitter - jitter/2);
-    b.baseDx = -nx * base + (Math.random()*jitter - jitter/2);
-    b.baseDy = -ny * base + (Math.random()*jitter - jitter/2);
-
-    // افصلهم قليلًا
-    const sep = 3;
-    a.x += nx * sep; a.y += ny * sep;
-    b.x -= nx * sep; b.y -= ny * sep;
-  }
-
-  function rpsResolve(a, b) {
-    let aType = a.el.dataset.type;
-    let bType = b.el.dataset.type;
-
-    if (aType === bType) {
-      playPoly("tie");
+    if(aType===bType){
+      playHit(aType);  // نفس النوع = نفس الصوت
       return;
     }
-
-    if (beatMap[aType] === bType) {
-      counts[bType]--;
-      b.el.dataset.type = aType;
-      b.el.innerText = emojis[aType];
-      counts[aType]++;
-      updateCounts();
-      playPoly(aType); // صوت الفائز
-    } else if (beatMap[bType] === aType) {
-      counts[aType]--;
-      a.el.dataset.type = bType;
-      a.el.innerText = emojis[bType];
-      counts[bType]++;
-      updateCounts();
-      playPoly(bType); // صوت الفائز
+    if(beatMap[aType]===bType){
+      counts[bType]--; b.el.dataset.type=aType; b.el.textContent=emojis[aType];
+      counts[aType]++; updateCounts(); playHit(aType);
+    }else if(beatMap[bType]===aType){
+      counts[aType]--; a.el.dataset.type=bType; a.el.textContent=emojis[bType];
+      counts[bType]++; updateCounts(); playHit(bType);
     }
   }
 
-  // ====== أنيميشن ======
-  function animate() {
-    if (!gameRunning) return;
+  function animate(){
+    if(!gameRunning) return;
 
-    // حركة العناصر
-    entities.forEach(e => {
-      let dx = e.baseDx * speedFactor;
-      let dy = e.baseDy * speedFactor;
-
-      e.x += dx;
-      e.y += dy;
-
-      // ارتداد عند الحواف
-      if (e.x <= 0 || e.x >= arena.clientWidth - 24) {
-        e.baseDx *= -1;
-        e.x = Math.min(Math.max(e.x, 0), arena.clientWidth - 24);
-      }
-      if (e.y <= 0 || e.y >= arena.clientHeight - 24) {
-        e.baseDy *= -1;
-        e.y = Math.min(Math.max(e.y, 0), arena.clientHeight - 24);
-      }
-
-      e.el.style.left = `${e.x}px`;
-      e.el.style.top = `${e.y}px`;
+    // حركة
+    entities.forEach(e=>{
+      let dx=e.baseDx*speedFactor, dy=e.baseDy*speedFactor;
+      e.x+=dx; e.y+=dy;
+      if(e.x<=0 || e.x>=arena.clientWidth-24){ e.baseDx*=-1; e.x=Math.min(Math.max(e.x,0),arena.clientWidth-24); }
+      if(e.y<=0 || e.y>=arena.clientHeight-24){ e.baseDy*=-1; e.y=Math.min(Math.max(e.y,0),arena.clientHeight-24); }
+      e.el.style.left=e.x+"px"; e.el.style.top=e.y+"px";
     });
 
-    // تصادمات متعددة في نفس الفريم
-    for (let i = 0; i < entities.length; i++) {
-      for (let j = i + 1; j < entities.length; j++) {
-        const a = entities[i];
-        const b = entities[j];
-        if (checkCollision(a, b)) {
-          // أولًا: دفعة متعاكسة + فصل
-          knockback(a, b);
-          // ثانيًا: حل RPS + تشغيل صوت الفائز لهذا التصادم
-          rpsResolve(a, b);
+    // التصادمات
+    for(let i=0;i<entities.length;i++){
+      for(let j=i+1;j<entities.length;j++){
+        const a=entities[i], b=entities[j];
+        if(checkCollision(a,b)){
+          knockback(a,b);
+          rpsResolve(a,b);
         }
       }
     }
 
-    // فحص الفائز النهائي
-    const aliveTypes = Object.keys(counts).filter(t => counts[t] > 0);
-    if (aliveTypes.length === 1) {
-      gameRunning = false;
-      cancelAnimationFrame(animationFrameId);
-      showWinner(aliveTypes[0]);
+    // تحقق فائز الجولة
+    const aliveTypes = Object.keys(counts).filter(t=>counts[t]>0);
+    if(aliveTypes.length===1){
+      gameRunning=false; cancelAnimationFrame(animationFrameId);
+      const winnerType = aliveTypes[0];
+
+      // إعادة ضبط الهدف عند تغيّر الفائز عن السابق، أو زيادة لو نفس السابق
+      if(lastRoundWinner===winnerType){ 
+        winnerStreak++; 
+      } else { 
+        winnerStreak = 1;  // إعادة ضبط وبداية من 1 للفائز الجديد
+      }
+      lastRoundWinner = winnerType; 
+      updateGoalUI();
+      if(winnerStreak===10){ announceJackpot(); }
+
+      showWinner(winnerType);
       return;
     }
 
     animationFrameId = requestAnimationFrame(animate);
   }
 
-  // ====== كونفيتي داخل الحلبة فقط ويقف عند القاع ======
-  function spawnConfettiOverWinner() {
+  // كونفيتي داخل الحلبة فقط ويقف عند القاع
+  function spawnConfettiOverWinner(){
     const hostRect = winnerEmoji.getBoundingClientRect();
     const arenaRect = arena.getBoundingClientRect();
-
-    const originX = (hostRect.left + hostRect.right) / 2 - arenaRect.left;
+    const originX = (hostRect.left + hostRect.right)/2 - arenaRect.left;
     const originTop = (hostRect.top - arenaRect.top) + 10;
-
-    const colors = ["#e74c3c","#2ecc71","#3498db","#f1c40f","#9b59b6"];
-    const count = 60;
-
-    for (let i = 0; i < count; i++) {
-      const c = document.createElement("div");
-      c.className = "confetti";
-      c.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
-      const startX = originX - 80 + Math.random()*160;
-      const startY = Math.max(0, originTop - 40 + Math.random()*20);
-      c.style.left = startX + "px";
-      c.style.top  = startY + "px";
+    const colors=["#e74c3c","#2ecc71","#3498db","#f1c40f","#9b59b6"];
+    for(let i=0;i<60;i++){
+      const c=document.createElement("div");
+      c.className="confetti";
+      c.style.backgroundColor=colors[Math.floor(Math.random()*colors.length)];
+      const startX=originX-80+Math.random()*160;
+      const startY=Math.max(0, originTop-40+Math.random()*20);
+      c.style.left=startX+"px"; c.style.top=startY+"px";
       arena.appendChild(c);
-
-      // سقوط يدوي داخل الحلبة
-      let vy = 2 + Math.random()*2;   // السرعة العمودية
-      let vx = (Math.random() - 0.5) * 1.2; // انحراف خفيف
-      const rot = (Math.random() < 0.5 ? -1 : 1) * (1 + Math.random()*2);
-      let angle = 0;
-
-      const fall = setInterval(()=>{
-        let y = parseFloat(c.style.top);
-        let x = parseFloat(c.style.left);
-        y += vy; x += vx; angle += rot;
-        c.style.top = y + "px";
-        c.style.left = x + "px";
-        c.style.transform = `rotate(${angle}deg)`;
-
-        // إذا وصل القاع: توقف وتبقى مكانها
-        if (y >= arena.clientHeight - 12) {
-          c.style.top = (arena.clientHeight - 12) + "px";
-          clearInterval(fall);
-        }
-      }, 16);
-
-      // تنظيف احتياطي بعد 8 ثواني (لو احتجت)
-      setTimeout(()=>{ try{ c.remove(); }catch(_){} }, 8000);
+      let vy=2+Math.random()*2, vx=(Math.random()-0.5)*1.2, rot=(Math.random()<0.5?-1:1)*(1+Math.random()*2), ang=0;
+      const fall=setInterval(()=>{
+        let y=parseFloat(c.style.top), x=parseFloat(c.style.left);
+        y+=vy; x+=vx; ang+=rot;
+        c.style.top=y+"px"; c.style.left=x+"px"; c.style.transform=`rotate(${ang}deg)`;
+        if(y>=arena.clientHeight-12){ c.style.top=(arena.clientHeight-12)+"px"; clearInterval(fall); }
+      },16);
+      setTimeout(()=>{ try{c.remove()}catch(_){}} , 8000);
     }
   }
 
-  function showWinner(type) {
-    // إخفاء العناصر
-    entities.forEach(e => { e.el.style.opacity = "0"; });
-
-    setTimeout(() => {
-      winnerEmoji.innerText = emojis[type];
+  function showWinner(type){
+    entities.forEach(e=> e.el.style.opacity="0");
+    setTimeout(()=>{
+      winnerEmoji.textContent = {rock:"🪨",paper:"📄",scissors:"✂️"}[type];
       winnerScreen.classList.add("show");
-      lastWinner.textContent = type === "rock" ? "حجر" : type === "paper" ? "ورقة" : "مقص";
-      try { victorySound.currentTime = 0; victorySound.play().catch(()=>{}); } catch(_){}
-
-      // كونفيتي فوق الفائز داخل الحلبة ويقف عند القاع
+      lastWinner.textContent = type==="rock"?"حجر":type==="paper"?"ورقة":"مقص";
+      try{ victorySound.currentTime=0; victorySound.play().catch(()=>{});}catch(_){}
       spawnConfettiOverWinner();
-    }, 400);
+    },400);
   }
 
-  // ====== إدارة اللعبة ======
-  function clearArena() {
-    // إزالة كل العناصر والكونفيتي فورًا
-    arena.querySelectorAll(".entity").forEach(el => el.remove());
-    arena.querySelectorAll(".confetti").forEach(c => c.remove());
-    entities = [];
-    counts = { rock: 0, paper: 0, scissors: 0 };
+  function clearArena(){
+    arena.querySelectorAll(".entity").forEach(el=>el.remove());
+    arena.querySelectorAll(".confetti").forEach(c=>c.remove());
+    entities=[]; counts={rock:0,paper:0,scissors:0};
+    updateCounts(); winnerScreen.classList.remove("show");
+    winnerEmoji.textContent=""; lastWinner.textContent="-";
+  }
+
+  function startGame(){
+    if(gameRunning) return;
+    clearArena();
+
+    // توزيع بعدد مخصّص لكل نوع (افتراضي 12)
+    const perType = Math.max(1, parseInt(countInput.value || "12",10));
+    ["rock","paper","scissors"].forEach(t=>{
+      for(let i=0;i<perType;i++) createEntity(t);
+    });
     updateCounts();
-    winnerScreen.classList.remove("show");
-    winnerEmoji.textContent = "";
-    lastWinner.textContent = "-";
+
+    gameRunning=true; animate();
   }
 
-  function startGame() {
-    if (gameRunning) return;
-    primeAudio(); // تهيئة الصوت عند أول بدء
-    clearArena();
-    speedFactor = parseFloat(speedSelect.value);
-
-    const types = ['rock', 'paper', 'scissors'];
-    const distribution = [15, 15, 15];
-    for (let i = 0; i < 3; i++) {
-      for (let j = 0; j < distribution[i]; j++) {
-        createEntity(types[i]);
-      }
-    }
-
-    gameRunning = true;
-    animate();
+  function endGame(){
+    gameRunning=false; cancelAnimationFrame(animationFrameId); clearArena();
   }
 
-  function endGame() {
-    gameRunning = false;
-    cancelAnimationFrame(animationFrameId);
-    clearArena();
-  }
-
-  speedSelect.onchange = () => { speedFactor = parseFloat(speedSelect.value); };
   startBtn.onclick = startGame;
-  endBtn.onclick = endGame;
-</script>
+  endBtn.onclick   = endGame;
 
+  // تحديث واجهة الهدف عند البداية
+  updateGoalUI();
+</script>
 </body>
 </html>
