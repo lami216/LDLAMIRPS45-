@@ -10,26 +10,40 @@
     }
     /* شريط التحكم */
     #controls{
-      padding:10px;background:#2c3e50;text-align:center;box-shadow:0 4px 6px rgba(0,0,0,.2);position:relative
+      padding:10px;background:#2c3e50;text-align:center;box-shadow:0 4px 6px rgba(0,0,0,.2);
+      position:relative; z-index:5; display:flex; gap:8px; justify-content:center; align-items:center; flex-wrap:wrap;
     }
     .btn{
-      padding:10px 14px;font-size:14px;margin:0 6px;cursor:pointer;border:0;border-radius:8px;
+      padding:10px 14px;font-size:14px;cursor:pointer;border:0;border-radius:8px;
       background:#3498db;color:#fff;font-weight:bold;transition:.25s
     }
     .btn:hover{background:#2980b9;transform:scale(1.04)}
+    .btn-green{background:#27ae60}.btn-green:hover{background:#1e8f4c}
+    .btn-danger{background:#e74c3c}.btn-danger:hover{background:#c0392b}
+    .btn-warning{background:#f39c12}.btn-warning:hover{background:#d68910}
     .input{
-      padding:9px 10px;border-radius:8px;border:0;margin:0 6px;font-weight:bold
+      padding:9px 10px;border-radius:8px;border:0;font-weight:bold;width:80px;text-align:center
     }
-    /* قائمة السرعة المنبثقة */
-    .menu{position:absolute;background:#1f2a36;border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,.25);display:none}
-    .menu button{display:block;width:100%;text-align:right;background:transparent;border:0;color:#fff;padding:10px 12px}
+    /* قائمة السرعة المنبثقة – تُتموضع برمجيًا بجانب الزر */
+    .menu{
+      position:absolute;background:#1f2a36;border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,.25);display:none; z-index:20;
+      min-width:120px
+    }
+    .menu button{display:block;width:100%;text-align:right;background:transparent;border:0;color:#fff;padding:10px 12px;cursor:pointer}
     .menu button:hover{background:#2c3e50}
     /* شريط الإحصاءات */
     #stats{
       padding:8px 12px;background:#34495e;color:#fff;display:flex;gap:18px;align-items:center;justify-content:center;
-      font-size:18px;font-weight:bold;border-bottom:3px solid #2c3e50
+      font-size:18px;font-weight:bold;border-bottom:3px solid #2c3e50; position:relative; z-index:4; flex-wrap:wrap
     }
     #stats .item{display:flex;align-items:center;gap:6px}
+    /* صندوق الهدف (هدية) – خارج الحلبة داخل الشريط */
+    #goalBox{
+      background:#ff8a00;color:#fff;border-radius:12px;padding:6px 10px;display:flex;align-items:center;gap:8px;
+      box-shadow:0 6px 16px rgba(0,0,0,.25);font-weight:bold
+    }
+    #goalBox .gift{font-size:20px}
+    #goalBox .pct{background:#fff;color:#ff8a00;font-weight:900;border-radius:8px;padding:4px 8px;min-width:48px;text-align:center}
     /* الحلبة */
     #arena{
       width:100%;height:600px;background:#fff;position:relative;overflow:hidden;border:3px solid #2c3e50;border-radius:12px;margin-top:10px
@@ -48,15 +62,6 @@
     @keyframes pulse{from{transform:scale(1)}to{transform:scale(1.15)}}
     /* الكونفيتي داخل الحلبة فقط */
     .confetti{position:absolute;width:10px;height:10px;opacity:.95;z-index:200;border-radius:2px}
-    /* صندوق الهدف (هدية) */
-    #goalBox{
-      position:absolute;top:10px;left:10px;background:#ff8a00;color:#fff;border-radius:12px;padding:8px 10px;display:flex;align-items:center;gap:8px;z-index:220;
-      box-shadow:0 6px 16px rgba(0,0,0,.25);font-weight:bold
-    }
-    #goalBox .gift{font-size:20px}
-    #goalBox .pct{background:#fff;color:#ff8a00;font-weight:900;border-radius:8px;padding:4px 8px;min-width:48px;text-align:center}
-    /* قائمة السرعة موقعها تحت زر السرعة */
-    #speedMenu{min-width:120px;right:10px;top:50px}
     /* توقيع الصورة أسفل اللعبة */
     #signatureWrap{display:flex;justify-content:center;align-items:center;margin:14px 0 24px}
     #signatureWrap img{max-width:92%;height:auto;opacity:.95}
@@ -65,27 +70,26 @@
 <body>
 
   <div id="controls">
-    <button id="startBtn" class="btn">بدء ▶️</button>
-    <button id="endBtn" class="btn" style="background:#e74c3c">إنهاء ⛔</button>
+    <button id="startBtn" class="btn btn-green">بدء ▶️</button>
+    <button id="endBtn" class="btn btn-danger">إنهاء ⛔</button>
 
     <!-- عدد العناصر لكل نوع (افتراضي 12) -->
-    <label style="color:#fff;margin:0 6px">العدد/نوع:
-      <input id="countInput" class="input" type="number" min="1" max="300" value="12" style="width:80px">
+    <label style="color:#fff;">العدد/نوع:
+      <input id="countInput" class="input" type="number" min="1" max="300" value="12">
     </label>
 
-    <!-- زر السرعة بقائمة -->
-    <button id="speedBtn" class="btn" style="background:#f39c12">⚡ السرعة: <span id="speedLabel">1.5x</span></button>
+    <!-- زر السرعة بقائمة تظهر بجواره -->
+    <button id="speedBtn" class="btn btn-warning">⚡ السرعة: <span id="speedLabel">1.5x</span></button>
     <div id="speedMenu" class="menu">
       <button data-speed="1">1x</button>
-      <button data-speed="1.25">1.25x</button>
       <button data-speed="1.5">1.5x</button>
-      <button data-speed="1.75">1.75x</button>
       <button data-speed="2">2x</button>
       <button data-speed="3">3x</button>
     </div>
   </div>
 
   <div id="stats">
+    <div id="goalBox"><span class="gift">🎁</span><span>الحظ المتواصل</span><span id="goalPct" class="pct">0%</span></div>
     <div class="item">🪨 <span id="rockCount">0</span></div>
     <div class="item">✂️ <span id="scissorsCount">0</span></div>
     <div class="item">📄 <span id="paperCount">0</span></div>
@@ -93,7 +97,6 @@
   </div>
 
   <div id="arena">
-    <div id="goalBox"><span class="gift">🎁</span><span>الحظ المتواصل</span><span id="goalPct" class="pct">0%</span></div>
     <div id="winnerScreen">
       <div id="winnerEmoji"></div>
       <div id="winnerText">🏆 البطل 🏆</div>
@@ -109,6 +112,7 @@
   <audio id="victorySound" src="https://www.fesliyanstudios.com/play-mp3/387" preload="auto"></audio>
 
 <script>
+  const controls = document.getElementById("controls");
   const arena = document.getElementById("arena");
   const lastWinner = document.getElementById("lastWinner");
   const winnerScreen = document.getElementById("winnerScreen");
@@ -144,7 +148,7 @@
     scissors: "scissor.mp3"
   };
 
-  // تشغيل صوت التصادم = صوت النوع الفائز / أو نفس النوع
+  // تشغيل صوت التصادم = صوت النوع الفائز فقط (لا صوت عندما النوعان متطابقان)
   function playHit(type){
     const url = soundURLs[type];
     if(!url) return;
@@ -168,9 +172,14 @@
     alert("🎁 الكود: 41380130\nلقد فزت معنا بجائزة قدرها 1000 أوقية مقدمة من المطور على روعة حظك!");
   }
 
-  // واجهة السرعة
-  speedBtn.addEventListener("click", () => {
-    speedMenu.style.display = speedMenu.style.display === "block" ? "none" : "block";
+  // قائمة السرعة: تموضع بجوار الزر
+  speedBtn.addEventListener("click", (e) => {
+    const btnRect = speedBtn.getBoundingClientRect();
+    const ctrlRect = controls.getBoundingClientRect();
+    // ضع القائمة أسفل الزر مباشرة وبداخله (نسبيًا لشريط التحكم)
+    speedMenu.style.left = (btnRect.left - ctrlRect.left) + "px";
+    speedMenu.style.top  = (btnRect.bottom - ctrlRect.top + 6) + "px";
+    speedMenu.style.display = (speedMenu.style.display === "block" ? "none" : "block");
   });
   document.addEventListener("click",(e)=>{
     if(!speedBtn.contains(e.target) && !speedMenu.contains(e.target)){
@@ -239,7 +248,7 @@
     let aType=a.el.dataset.type, bType=b.el.dataset.type;
 
     if(aType===bType){
-      playHit(aType);  // نفس النوع = نفس الصوت
+      // لا صوت عند تطابق النوعين
       return;
     }
     if(beatMap[aType]===bType){
@@ -284,7 +293,7 @@
       if(lastRoundWinner===winnerType){ 
         winnerStreak++; 
       } else { 
-        winnerStreak = 1;  // إعادة ضبط وبداية من 1 للفائز الجديد
+        winnerStreak = 1;  // يبدأ من 1 للفائز الجديد
       }
       lastRoundWinner = winnerType; 
       updateGoalUI();
