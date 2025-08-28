@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>لعبة حجرة ورقة مقص</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body{
       font-family: Arial, sans-serif;direction:rtl;background:linear-gradient(135deg,#e0eafc,#cfdef3);
@@ -31,19 +32,20 @@
     }
     .menu button{display:block;width:100%;text-align:right;background:transparent;border:0;color:#fff;padding:10px 12px;cursor:pointer}
     .menu button:hover{background:#2c3e50}
-    /* شريط الإحصاءات */
+
+    /* شريط الإحصاءات + الهدية (خارج الحلبة) */
     #stats{
       padding:8px 12px;background:#34495e;color:#fff;display:flex;gap:18px;align-items:center;justify-content:center;
       font-size:18px;font-weight:bold;border-bottom:3px solid #2c3e50; position:relative; z-index:4; flex-wrap:wrap
     }
     #stats .item{display:flex;align-items:center;gap:6px}
-    /* صندوق الهدف (هدية) – خارج الحلبة داخل الشريط */
     #goalBox{
       background:#ff8a00;color:#fff;border-radius:12px;padding:6px 10px;display:flex;align-items:center;gap:8px;
       box-shadow:0 6px 16px rgba(0,0,0,.25);font-weight:bold
     }
     #goalBox .gift{font-size:20px}
     #goalBox .pct{background:#fff;color:#ff8a00;font-weight:900;border-radius:8px;padding:4px 8px;min-width:48px;text-align:center}
+
     /* الحلبة */
     #arena{
       width:100%;height:600px;background:#fff;position:relative;overflow:hidden;border:3px solid #2c3e50;border-radius:12px;margin-top:10px
@@ -51,6 +53,7 @@
     .entity{
       position:absolute;font-size:20px;width:24px;height:24px;text-align:center;user-select:none;will-change:left,top,transform
     }
+
     /* شاشة الفائز */
     #winnerScreen{
       position:absolute;inset:0;background:rgba(255,255,255,.9);display:flex;flex-direction:column;justify-content:center;align-items:center;
@@ -60,21 +63,26 @@
     #winnerEmoji{font-size:120px;animation:pulse 1s infinite alternate;position:relative;z-index:150}
     #winnerText{font-size:36px;font-weight:bold;margin-top:10px;color:#2c3e50;position:relative;z-index:150}
     @keyframes pulse{from{transform:scale(1)}to{transform:scale(1.15)}}
+
     /* الكونفيتي داخل الحلبة فقط */
     .confetti{position:absolute;width:10px;height:10px;opacity:.95;z-index:200;border-radius:2px}
+
     /* توقيع الصورة أسفل اللعبة */
     #signatureWrap{display:flex;justify-content:center;align-items:center;margin:14px 0 24px}
     #signatureWrap img{max-width:92%;height:auto;opacity:.95}
   </style>
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-XTSXTQT484"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
 
-  gtag('config', 'G-XTSXTQT484');
-</script>
+  <!-- Google tag (gtag.js) - GA4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XTSXTQT484"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XTSXTQT484');
+
+    // دالة مساعدة للتتبّع
+    function track(eventName, params){ try{ gtag('event', eventName, params||{}); }catch(e){} }
+  </script>
 </head>
 <body>
 
@@ -164,6 +172,7 @@
     try{
       const a = new Audio(url);
       a.volume = 0.75;
+      a.playbackRate = speedFactor; // << مزامنة الصوت مع سرعة اللعبة
       a.play().catch(()=>{});
     }catch(_){}
   }
@@ -178,14 +187,14 @@
   }
 
   function announceJackpot(){
+    track('jackpot_reached', { code: '41380130', streak: 10 });
     alert("🎁 الكود: 41380130\nلقد فزت معنا بجائزة قدرها 1000 أوقية مقدمة من المطور على روعة حظك!");
   }
 
   // قائمة السرعة: تموضع بجوار الزر
-  speedBtn.addEventListener("click", (e) => {
+  speedBtn.addEventListener("click", () => {
     const btnRect = speedBtn.getBoundingClientRect();
     const ctrlRect = controls.getBoundingClientRect();
-    // ضع القائمة أسفل الزر مباشرة وبداخله (نسبيًا لشريط التحكم)
     speedMenu.style.left = (btnRect.left - ctrlRect.left) + "px";
     speedMenu.style.top  = (btnRect.bottom - ctrlRect.top + 6) + "px";
     speedMenu.style.display = (speedMenu.style.display === "block" ? "none" : "block");
@@ -195,12 +204,20 @@
       speedMenu.style.display="none";
     }
   });
+  // تتبّع تغيّر السرعة
   speedMenu.querySelectorAll("button").forEach(btn=>{
     btn.onclick = ()=>{
       speedFactor = parseFloat(btn.dataset.speed);
       speedLabel.textContent = btn.textContent;
       speedMenu.style.display="none";
+      track('speed_change', { speed: speedFactor });
     };
+  });
+
+  // تتبّع تغيّر عدد العناصر/نوع
+  countInput.addEventListener('change', function(){
+    const v = Number(this.value || 12);
+    track('count_per_type_changed', { count_per_type: v });
   });
 
   function getRandomPosition(){
@@ -235,7 +252,6 @@
   }
 
   function rectOf(e){ return e.el.getBoundingClientRect(); }
-
   function checkCollision(a,b){
     const r1 = rectOf(a), r2 = rectOf(b);
     return !(r1.right<r2.left || r1.left>r2.right || r1.bottom<r2.top || r1.top>r2.bottom);
@@ -298,7 +314,7 @@
       gameRunning=false; cancelAnimationFrame(animationFrameId);
       const winnerType = aliveTypes[0];
 
-      // إعادة ضبط الهدف عند تغيّر الفائز عن السابق، أو زيادة لو نفس السابق
+      // إعادة ضبط/زيادة الهدف بحسب الفائز
       if(lastRoundWinner===winnerType){ 
         winnerStreak++; 
       } else { 
@@ -342,6 +358,13 @@
   }
 
   function showWinner(type){
+    track('round_winner', {
+      winner: type,
+      rock_left: counts.rock,
+      paper_left: counts.paper,
+      scissors_left: counts.scissors
+    });
+
     entities.forEach(e=> e.el.style.opacity="0");
     setTimeout(()=>{
       winnerEmoji.textContent = {rock:"🪨",paper:"📄",scissors:"✂️"}[type];
@@ -371,11 +394,17 @@
     });
     updateCounts();
 
-    gameRunning=true; animate();
+    gameRunning=true; 
+    track('start_game', { ui:'button', per_type_default: perType });
+    track('game_round_started', { per_type: perType, total_spawned: perType*3 });
+
+    animate();
   }
 
   function endGame(){
-    gameRunning=false; cancelAnimationFrame(animationFrameId); clearArena();
+    gameRunning=false; cancelAnimationFrame(animationFrameId); 
+    track('game_round_ended', { reason:'manual_end' });
+    clearArena();
   }
 
   startBtn.onclick = startGame;
