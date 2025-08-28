@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <title>لعبة حجرة ورقة مقص</title>
+  <meta name="description" content="لعبة حجرة ورقة مقص تفاعلية تناسب الجوال، اختر رهانك وشاهد النتيجة." />
+  <meta name="keywords" content="لعبة,حجر,ورقة,مقص,جوال" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body{
@@ -70,6 +72,10 @@
     /* توقيع الصورة أسفل اللعبة */
     #signatureWrap{display:flex;justify-content:center;align-items:center;margin:14px 0 24px}
     #signatureWrap img{max-width:92%;height:auto;opacity:.95}
+    #mainTitle{ text-align:center;color:#2c3e50;margin:12px 0;font-size:24px }
+    #playerResult{font-size:24px;margin-top:8px;color:#e74c3c;position:relative;z-index:150}
+    #playerResult.win{color:#27ae60}
+    @media(max-width:600px){#controls>*{flex:1 1 calc(50% - 16px)}}
   </style>
 
   <!-- Google tag (gtag.js) - GA4 -->
@@ -85,18 +91,28 @@
   </script>
 </head>
 <body>
+  <h1 id="mainTitle">لعبة حجرة ورقة مقص</h1>
 
   <div id="controls">
     <button id="startBtn" class="btn btn-green">بدء ▶️</button>
     <button id="endBtn" class="btn btn-danger">إنهاء ⛔</button>
 
-    <!-- عدد العناصر لكل نوع (افتراضي 12) -->
-    <label style="color:#fff;">العدد/نوع:
-      <input id="countInput" class="input" type="number" min="1" max="36" value="12">
-    </label>
+  <!-- عدد العناصر لكل نوع (افتراضي 12) -->
+  <label style="color:#fff;">العدد/نوع:
+    <input id="countInput" class="input" type="number" min="1" max="36" value="12">
+  </label>
 
-    <!-- زر السرعة بقائمة تظهر بجواره -->
-    <button id="speedBtn" class="btn btn-warning">⚡ السرعة: <span id="speedLabel">1.5x</span></button>
+  <!-- اختيار العنصر -->
+  <label style="color:#fff;">اختيارك:
+    <select id="choiceSelect" class="input">
+      <option value="rock">حجر</option>
+      <option value="paper">ورقة</option>
+      <option value="scissors">مقص</option>
+    </select>
+  </label>
+
+  <!-- زر السرعة بقائمة تظهر بجواره -->
+  <button id="speedBtn" class="btn btn-warning">⚡ السرعة: <span id="speedLabel">1.5x</span></button>
     <div id="speedMenu" class="menu">
       <button data-speed="1">1x</button>
       <button data-speed="1.5">1.5x</button>
@@ -117,12 +133,13 @@
     <div id="winnerScreen">
       <div id="winnerEmoji"></div>
       <div id="winnerText">🏆 البطل 🏆</div>
+      <div id="playerResult"></div>
     </div>
   </div>
 
   <!-- صورة التوقيع أسفل الحلبة -->
   <div id="signatureWrap">
-    <img src="Signature.png" alt="Signature">
+    <img src="Signature.png" alt="توقيع المطور">
   </div>
 
   <!-- صوت الفوز -->
@@ -136,6 +153,8 @@
   const winnerEmoji = document.getElementById("winnerEmoji");
   const victorySound = document.getElementById("victorySound");
   const goalPctEl = document.getElementById("goalPct");
+  const choiceSelect = document.getElementById("choiceSelect");
+  const playerResult = document.getElementById("playerResult");
 
   const startBtn = document.getElementById("startBtn");
   const endBtn = document.getElementById("endBtn");
@@ -383,12 +402,21 @@
     });
 
     entities.forEach(e=> e.el.style.opacity="0");
-    setTimeout(()=>{
-      winnerEmoji.textContent = {rock:"🪨",paper:"📄",scissors:"✂️"}[type];
-      winnerScreen.classList.add("show");
-      lastWinner.textContent = type==="rock"?"حجر":type==="paper"?"ورقة":"مقص";
-      try{ 
-        victorySound.pause(); 
+      setTimeout(()=>{
+        winnerEmoji.textContent = {rock:"🪨",paper:"📄",scissors:"✂️"}[type];
+        winnerScreen.classList.add("show");
+        lastWinner.textContent = type==="rock"?"حجر":type==="paper"?"ورقة":"مقص";
+        if(choiceSelect){
+          if(choiceSelect.value===type){
+            playerResult.textContent="🎉 لقد فزت!";
+            playerResult.classList.add("win");
+          }else{
+            playerResult.textContent="للأسف خسرت.";
+            playerResult.classList.remove("win");
+          }
+        }
+        try{
+          victorySound.pause();
         victorySound.currentTime=0; 
         victorySound.play().catch(()=>{}); 
       }catch(_){}
@@ -403,6 +431,7 @@
     entities=[]; counts={rock:0,paper:0,scissors:0};
     updateCounts(); winnerScreen.classList.remove("show");
     winnerEmoji.textContent=""; lastWinner.textContent="-";
+    if(playerResult){ playerResult.textContent=""; playerResult.classList.remove("win"); }
   }
 
   function startGame(){
