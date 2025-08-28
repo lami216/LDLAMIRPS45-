@@ -92,7 +92,7 @@
 
     <!-- عدد العناصر لكل نوع (افتراضي 12) -->
     <label style="color:#fff;">العدد/نوع:
-      <input id="countInput" class="input" type="number" min="1" max="300" value="12">
+      <input id="countInput" class="input" type="number" min="1" max="36" value="12">
     </label>
 
     <!-- زر السرعة بقائمة تظهر بجواره -->
@@ -165,15 +165,25 @@
     scissors: "scissor.mp3"
   };
 
+  // لتوقيف كل أصوات التصادم فور إعلان الفائز
+  const activeSFX = new Set();
+  function stopAllSFX(){
+    activeSFX.forEach(a => { try{ a.pause(); a.currentTime = 0; }catch(_){}} );
+    activeSFX.clear();
+  }
+
   // تشغيل صوت التصادم = صوت النوع الفائز فقط (لا صوت عندما النوعان متطابقان)
   function playHit(type){
+    if(!gameRunning) return; // احتياط
     const url = soundURLs[type];
     if(!url) return;
     try{
       const a = new Audio(url);
       a.volume = 0.75;
-      a.playbackRate = speedFactor; // << مزامنة الصوت مع سرعة اللعبة
-      a.play().catch(()=>{});
+      a.playbackRate = speedFactor; // مزامنة الصوت مع سرعة اللعبة
+      activeSFX.add(a);
+      a.addEventListener('ended', ()=> activeSFX.delete(a));
+      a.play().catch(()=>{ activeSFX.delete(a); });
     }catch(_){}
   }
 
@@ -216,6 +226,8 @@
 
   // تتبّع تغيّر عدد العناصر/نوع
   countInput.addEventListener('change', function(){
+    // clamp للسقف الجديد 36
+    if(this.value > 36) this.value = 36;
     const v = Number(this.value || 12);
     track('count_per_type_changed', { count_per_type: v });
   });
@@ -311,7 +323,9 @@
     // تحقق فائز الجولة
     const aliveTypes = Object.keys(counts).filter(t=>counts[t]>0);
     if(aliveTypes.length===1){
-      gameRunning=false; cancelAnimationFrame(animationFrameId);
+      gameRunning=false; 
+      cancelAnimationFrame(animationFrameId);
+
       const winnerType = aliveTypes[0];
 
       // إعادة ضبط/زيادة الهدف بحسب الفائز
@@ -358,6 +372,9 @@
   }
 
   function showWinner(type){
+    // اقطع فورًا أي أصوات تصادم شغالة
+    stopAllSFX();
+
     track('round_winner', {
       winner: type,
       rock_left: counts.rock,
@@ -370,12 +387,17 @@
       winnerEmoji.textContent = {rock:"🪨",paper:"📄",scissors:"✂️"}[type];
       winnerScreen.classList.add("show");
       lastWinner.textContent = type==="rock"?"حجر":type==="paper"?"ورقة":"مقص";
-      try{ victorySound.currentTime=0; victorySound.play().catch(()=>{});}catch(_){}
+      try{ 
+        victorySound.pause(); 
+        victorySound.currentTime=0; 
+        victorySound.play().catch(()=>{}); 
+      }catch(_){}
       spawnConfettiOverWinner();
     },400);
   }
 
   function clearArena(){
+    stopAllSFX(); // تنظيف أي صوت عند تصفية الحلبة أيضًا
     arena.querySelectorAll(".entity").forEach(el=>el.remove());
     arena.querySelectorAll(".confetti").forEach(c=>c.remove());
     entities=[]; counts={rock:0,paper:0,scissors:0};
@@ -387,8 +409,9 @@
     if(gameRunning) return;
     clearArena();
 
-    // توزيع بعدد مخصّص لكل نوع (افتراضي 12)
-    const perType = Math.max(1, parseInt(countInput.value || "12",10));
+    // توزيع بعدد مخصّص لكل نوع (افتراضي 12، سقف 36)
+    const perType = Math.max(1, Math.min(36, parseInt(countInput.value || "12",10)));
+    countInput.value = perType; // تثبيت ضمن النطاق
     ["rock","paper","scissors"].forEach(t=>{
       for(let i=0;i<perType;i++) createEntity(t);
     });
@@ -402,7 +425,8 @@
   }
 
   function endGame(){
-    gameRunning=false; cancelAnimationFrame(animationFrameId); 
+    gameRunning=false; 
+    cancelAnimationFrame(animationFrameId); 
     track('game_round_ended', { reason:'manual_end' });
     clearArena();
   }
