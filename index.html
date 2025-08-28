@@ -75,7 +75,46 @@
     #mainTitle{ text-align:center;color:#2c3e50;margin:12px 0;font-size:24px }
     #playerResult{font-size:24px;margin-top:8px;color:#e74c3c;position:relative;z-index:150}
     #playerResult.win{color:#27ae60}
-    @media(max-width:600px){#controls>*{flex:1 1 calc(50% - 16px)}}
+    @media (max-width: 600px) {
+      #controls {
+        padding: 6px;
+        gap: 4px;
+      }
+      .btn {
+        padding: 6px 8px;
+        font-size: 12px;
+      }
+      .input {
+        padding: 4px 6px;
+        width: 60px;
+      }
+      #stats {
+        padding: 6px 8px;
+        font-size: 14px;
+        gap: 12px;
+      }
+      #arena {
+        height: 70vh;
+      }
+      .entity {
+        font-size: 16px;
+        width: 20px;
+        height: 20px;
+      }
+      #mainTitle {
+        font-size: 20px;
+        margin: 8px 0;
+      }
+      #winnerEmoji {
+        font-size: 80px;
+      }
+      #winnerText {
+        font-size: 24px;
+      }
+      #controls>* {
+        flex: 1 1 calc(50% - 16px);
+      }
+    }
   </style>
 
   <!-- Google tag (gtag.js) - GA4 -->
